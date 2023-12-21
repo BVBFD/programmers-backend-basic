@@ -1,7 +1,14 @@
 const conn = require("../utils/mariadb");
 
 const getAllChannel = (req, res) => {
-  const sql = `SELECT * FROM channels`;
+  const { userId } = req.body;
+
+  if (!userId)
+    return res.status(400).json({
+      message: "userId 제대로 입력해주세요!!",
+    });
+
+  const sql = `SELECT * FROM channels WHERE user_id='${userId}'`;
 
   try {
     conn.query(sql, (err, results) => {
