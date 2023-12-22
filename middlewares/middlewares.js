@@ -1,13 +1,25 @@
-// params.id 숫자 유효성 검사 미들웨어
-function validateId(req, res, next) {
-  req.params.id = parseInt(req.params.id);
-  const id = req.params.id;
+const { validationResult } = require("express-validator");
 
-  if (isNaN(id)) {
-    return res.status(400).json({ message: "잘못된 형식의 ID 입니다!!!" });
+const validateResults = (req, res, next) => {
+  const err = validationResult(req);
+
+  if (!err.isEmpty()) {
+    const errors = err.array()[0];
+    return res.status(400).json(errors);
   }
 
-  next();
-}
+  if (req.params.id) {
+    req.params.id = parseInt(req.params.id);
+    const id = req.params.id;
 
-module.exports = { validateId };
+    if (isNaN(id)) {
+      return res
+        .status(400)
+        .json({ message: "잘못된 형식의 params.id 입니다!!!" });
+    }
+  }
+
+  return next();
+};
+
+module.exports = { validateResults };

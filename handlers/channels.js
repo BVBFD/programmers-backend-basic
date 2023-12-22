@@ -2,12 +2,6 @@ const conn = require("../utils/mariadb");
 
 const getAllChannel = (req, res) => {
   const { userId } = req.body;
-
-  if (!userId)
-    return res.status(400).json({
-      message: "userId 제대로 입력해주세요!!",
-    });
-
   const sql = `SELECT * FROM channels WHERE user_id='${userId}'`;
 
   try {
@@ -31,11 +25,6 @@ const getAllChannel = (req, res) => {
 
 const makeNewChannel = (req, res) => {
   const { name, email } = req.body;
-  if (!email || !name)
-    return res
-      .status(400)
-      .json({ message: "email, channel name 제대로 입력해주세요!!" });
-
   const getUserIdSql = `SELECT id FROM users WHERE email="${email}"`;
 
   try {
@@ -90,22 +79,24 @@ const deleteAllChannel = (req, res) => {
 const editChannelById = (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
-
-  if (!name)
-    return res
-      .status(400)
-      .json({ message: "수정할 내용을 정확히 입력해주세요!!" });
-
   const sql = `UPDATE channels SET name='${name}' WHERE id='${id}'`;
 
   try {
     conn.query(sql, (err, results) => {
-      if (err)
+      if (err) {
         return res
           .status(400)
           .json({ message: "sql 구문이 정확하지 않습니다" });
-
-      return res.status(200).json(results);
+      }
+      // 이건 주의해야할 점
+      if (results.affectedRows === 0) {
+        return res
+          .status(400)
+          .json({ message: "업데이트할 channel을 찾을 수가 없습니다" });
+        // 이건 주의해야할 점
+      } else {
+        return res.status(200).json(results);
+      }
     });
   } catch (error) {
     return res.status(500).json({ message: "DB 연결에 실패했습니다!!" });
@@ -114,7 +105,6 @@ const editChannelById = (req, res) => {
 
 const getChannelById = (req, res) => {
   const { id } = req.params;
-
   const sql = `SELECT * FROM channels WHERE id='${id}'`;
 
   try {
@@ -143,12 +133,21 @@ const deleteChannelById = (req, res) => {
 
   try {
     conn.query(sql, (err, results) => {
-      if (err)
+      if (err) {
         return res.status(400).json({
           message: "sql 구문이 잘못되었습니다!!",
         });
+      }
 
-      return res.status(200).json(results);
+      // 이건 주의해야할 점
+      if (results.affectedRows === 0) {
+        return res
+          .status(400)
+          .json({ message: "삭제할 channel을 찾을 수가 없습니다" });
+        // 이건 주의해야할 점
+      } else {
+        return res.status(200).json(results);
+      }
     });
   } catch (error) {
     return res.status(500).json({ message: "DB 연결에 실패했습니다!!" });
