@@ -1,3 +1,6 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
 const express = require("express");
 const usersRouter = require("./routes/users");
 const channelsRouter = require("./routes/channels");

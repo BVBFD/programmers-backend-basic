@@ -1,4 +1,5 @@
 const conn = require("../utils/mariadb");
+const jwt = require("jsonwebtoken");
 
 const login = (req, res) => {
   const { email, password } = req.body;
@@ -16,7 +17,22 @@ const login = (req, res) => {
           .status(400)
           .json({ message: "email 또는 password가 일치하지 않습니다!!" });
 
-      return res.status(200).json(users[0]);
+      const token = jwt.sign(
+        {
+          email: users[0].email,
+          name: users[0].name,
+        },
+        `${process.env.JWT_PRIVATE_KEY}`,
+        { expiresIn: "30m", issuer: "Lee Seong Eun" }
+      );
+
+      res.cookie("token", token, {
+        httpOnly: true,
+      });
+
+      return res.status(200).json({
+        message: `${users[0].name}님 로그인 되었습니다.`,
+      });
     });
   } catch (error) {
     return res.status(500).json({ message: "DB 연결에 실패했습니다!!" });
